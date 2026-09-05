@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sua Loja Virtual</title>
+    <!-- Bootstrap 5 CSS & Ícones -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar-brand {
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+        .pix-box {
+            background-color: #e8f5e9;
+            border: 1px dashed #2e7d32;
+            border-radius: 8px;
+            padding: 15px;
+            display: none;
+        }
+        .troco-box {
+            background-color: #fff3cd;
+            border: 1px dashed #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+    <!-- Navegação -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow">
+        <div class="container">
+            <a class="navbar-brand text-warning" href="/">
+                <i class="bi bi-bag-heart-fill me-2"></i>SUA LOJA
+            </a>
+            <div class="navbar-nav ms-auto d-flex flex-row align-items-center gap-3">
+                <a class="nav-link text-white fw-semibold" href="/">Início</a>
+                <a class="nav-link btn btn-outline-warning text-warning btn-sm px-3" href="/admin">
+                    <i class="bi bi-gear-fill me-1"></i> Admin
+                </a>
+                <button class="btn btn-warning btn-sm fw-bold position-relative px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCarrinho">
+                    <i class="bi bi-cart-fill me-1"></i> Carrinho
+                    <span id="carrinho-qtd" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <main class="container py-4 flex-grow-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Modal do Carrinho & Checkout -->
+    <div class="modal fade" id="modalCarrinho" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-cart-check me-2 text-warning"></i>Seu Pedido</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Lista de Itens -->
+                    <ul id="lista-carrinho" class="list-group list-group-flush mb-3">
+                        <li class="list-group-item text-center text-muted py-3">Seu carrinho está vazio.</li>
+                    </ul>
+
+                    <!-- Observações de Bebida/Combo -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted"><i class="bi bi-pencil-square me-1"></i>Observações / Bebida do Combo:</label>
+                        <input type="text" id="observacoes-pedido" class="form-control form-control-sm" placeholder="Ex: Coca-Cola, Guaraná, sem cebola, ponto da carne...">
+                    </div>
+
+                    <!-- Total -->
+                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded mb-3 border">
+                        <span class="fs-6 fw-bold">Total a pagar:</span>
+                        <span id="total-carrinho" class="fs-4 fw-bold text-success">R$ 0,00</span>
+                    </div>
+
+                    <!-- Forma de Pagamento -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Forma de Pagamento:</label>
+                        <select id="pagamento-opcao" class="form-select" onchange="togglePagamentoInfo()">
+                            <option value="PIX">PIX (Chave WhatsApp / Celular)</option>
+                            <option value="Cartão de Crédito/Débito">Cartão (Na entrega)</option>
+                            <option value="Dinheiro">Dinheiro (Em espécie)</option>
+                        </select>
+                    </div>
+
+                    <!-- Caixa Informativa do PIX -->
+                    <div id="pix-box" class="pix-box mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-qr-code-scan fs-4 text-success me-2"></i>
+                            <strong class="text-success">Chave PIX para pagamento:</strong>
+                        </div>
+                        <p class="mb-1 text-muted small">Copie a chave abaixo ou realize o pagamento após o envio pelo WhatsApp:</p>
+                        <div class="input-group input-group-sm mb-2">
+                            <input type="text" id="chave-pix" class="form-control font-monospace" value="91992105399" readonly>
+                            <button class="btn btn-outline-success" type="button" onclick="copiarPix()"><i class="bi bi-copy"></i> Copiar</button>
+                        </div>
+                        <small class="text-muted d-block" style="font-size: 0.75rem;">* O comprovante poderá ser anexado na conversa do WhatsApp.</small>
+                    </div>
+
+                    <!-- Caixa de Opção de Troco (Dinheiro) -->
+                    <div id="troco-box" class="troco-box mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-cash-stack fs-4 text-warning-emphasis me-2"></i>
+                            <strong class="text-dark">Precisa de Troco?</strong>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small mb-1">Vai pagar com quanto?</label>
+                            <input type="number" step="0.01" id="valor-troco" class="form-control form-control-sm" placeholder="Ex: 50.00 ou deixe em branco se não precisar">
+                        </div>
+                        <small class="text-muted d-block" style="font-size: 0.75rem;">* Se não precisar de troco, basta deixar o campo em branco.</small>
+                    </div>
+
+                    <!-- Dados de Entrega / Endereços Salvos -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-geo-alt-fill text-danger me-1"></i> Nome & Endereço de Entrega:</span>
+                        </label>
+
+                        <!-- Seletor de Endereços Salvos -->
+                        <div id="container-enderecos-salvos" class="mb-2" style="display: none;">
+                            <div class="input-group input-group-sm">
+                                <select id="select-enderecos-salvos" class="form-select" onchange="selecionarEnderecoSalvo()">
+                                    <option value="">-- Selecionar de entregas anteriores --</option>
+                                </select>
+                                <button type="button" class="btn btn-outline-danger" onclick="removerEnderecoSalvo()" title="Excluir este endereço do histórico">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Campo de Texto para Nome e Endereço -->
+                        <textarea id="cliente-info" class="form-control" rows="2" placeholder="Ex: Maria Souza - Rua Das Flores, 123 - Bairro Centro"></textarea>
+                        <small class="text-muted" style="font-size: 0.75rem;">* Os endereços informados ficam salvos neste dispositivo para compras futuras.</small>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Continuar Comprando</button>
+                    <button type="button" class="btn btn-success fw-bold px-4" onclick="enviarWhatsApp()">
+                        <i class="bi bi-whatsapp me-1"></i> Finalizar no WhatsApp
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rodapé -->
+    <footer class="bg-dark text-white text-center py-3 mt-auto">
+        <div class="container">
+            <small class="text-muted">&copy; 2026 - Sua Loja Virtual | Todos os direitos reservados</small>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let carrinho = [];
+        const SEU_NUMERO_WHATSAPP = "5591991335186";
+
+        function adicionarAoCarrinho(nome, preco) {
+            carrinho.push({ nome, preco });
+            atualizarCarrinho();
+        }
+
+        function atualizarCarrinho() {
+            document.getElementById('carrinho-qtd').innerText = carrinho.length;
+            const lista = document.getElementById('lista-carrinho');
+            const totalElemento = document.getElementById('total-carrinho');
+            
+            if (carrinho.length === 0) {
+                lista.innerHTML = '<li class="list-group-item text-center text-muted py-3">Seu carrinho está vazio.</li>';
+                totalElemento.innerText = 'R$ 0,00';
+                return;
+            }
+
+            lista.innerHTML = '';
+            let total = 0;
+            carrinho.forEach((item, index) => {
+                total += item.preco;
+                lista.innerHTML += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span class="fw-semibold">${item.nome}</span>
+                        <div>
+                            <span class="fw-bold text-success me-3">R$ ${item.preco.toFixed(2).replace('.', ',')}</span>
+                            <button class="btn btn-sm btn-outline-danger border-0" onclick="removerDoCarrinho(${index})">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </div>
+                    </li>
+                `;
+            });
+            totalElemento.innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
+        }
+
+        function removerDoCarrinho(index) {
+            carrinho.splice(index, 1);
+            atualizarCarrinho();
+        }
+
+        function togglePagamentoInfo() {
+            const opcao = document.getElementById('pagamento-opcao').value;
+            const pixBox = document.getElementById('pix-box');
+            const trocoBox = document.getElementById('troco-box');
+
+            pixBox.style.display = (opcao === 'PIX') ? 'block' : 'none';
+            trocoBox.style.display = (opcao === 'Dinheiro') ? 'block' : 'none';
+        }
+
+        function carregarEnderecosSalvos() {
+            const enderecos = JSON.parse(localStorage.getItem('enderecos_loja') || '[]');
+            const container = document.getElementById('container-enderecos-salvos');
+            const select = document.getElementById('select-enderecos-salvos');
+            const campoTexto = document.getElementById('cliente-info');
+
+            if (enderecos.length > 0) {
+                container.style.display = 'block';
+                select.innerHTML = '<option value="">-- Selecionar de entregas anteriores --</option>';
+                enderecos.forEach((end, idx) => {
+                    select.innerHTML += `<option value="${idx}">${end}</option>`;
+                });
+                
+                if (!campoTexto.value) {
+                    campoTexto.value = enderecos[0];
+                }
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
+        function selecionarEnderecoSalvo() {
+            const select = document.getElementById('select-enderecos-salvos');
+            const enderecos = JSON.parse(localStorage.getItem('enderecos_loja') || '[]');
+            const idx = select.value;
+
+            if (idx !== "") {
+                document.getElementById('cliente-info').value = enderecos[idx];
+            }
+        }
+
+        function salvarEndereco(novoEndereco) {
+            if (!novoEndereco) return;
+            let enderecos = JSON.parse(localStorage.getItem('enderecos_loja') || '[]');
+            enderecos = enderecos.filter(end => end.toLowerCase() !== novoEndereco.toLowerCase());
+            enderecos.unshift(novoEndereco);
+
+            if (enderecos.length > 5) {
+                enderecos = enderecos.slice(0, 5);
+            }
+
+            localStorage.setItem('enderecos_loja', JSON.stringify(enderecos));
+        }
+
+        function removerEnderecoSalvo() {
+            const select = document.getElementById('select-enderecos-salvos');
+            const idx = select.value;
+
+            if (idx === "") {
+                alert("Selecione um endereço da lista para excluir.");
+                return;
+            }
+
+            let enderecos = JSON.parse(localStorage.getItem('enderecos_loja') || '[]');
+            enderecos.splice(idx, 1);
+            localStorage.setItem('enderecos_loja', JSON.stringify(enderecos));
+            document.getElementById('cliente-info').value = "";
+            carregarEnderecosSalvos();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            togglePagamentoInfo();
+            carregarEnderecosSalvos();
+        });
+
+        function copiarPix() {
+            const chave = document.getElementById('chave-pix');
+            chave.select();
+            document.execCommand("copy");
+            alert("Chave PIX copiada com sucesso!");
+        }
+
+        function enviarWhatsApp() {
+            if (carrinho.length === 0) {
+                alert("Sua sacola está vazia! Adicione produtos antes de finalizar.");
+                return;
+            }
+
+            const info = document.getElementById('cliente-info').value.trim();
+            const formaPagamento = document.getElementById('pagamento-opcao').value;
+            const obs = document.getElementById('observacoes-pedido').value.trim();
+
+            if (!info) {
+                alert("Por favor, preencha seu nome e endereço de entrega.");
+                return;
+            }
+
+            salvarEndereco(info);
+
+            let mensagem = `*🛍️ NOVO PEDIDO - SUA LOJA*\n`;
+            mensagem += `-----------------------------------\n`;
+            
+            let total = 0;
+            carrinho.forEach((item) => {
+                mensagem += `• *1x* ${item.nome} - _R$ ${item.preco.toFixed(2).replace('.', ',')}_\n`;
+                total += item.preco;
+            });
+
+            if (obs) {
+                mensagem += `📝 *OBS / BEBIDA:* ${obs}\n`;
+            }
+
+            mensagem += `-----------------------------------\n`;
+            mensagem += `💰 *TOTAL:* R$ ${total.toFixed(2).replace('.', ',')}\n`;
+            mensagem += `💳 *PAGAMENTO:* ${formaPagamento}\n`;
+
+            if (formaPagamento === 'Dinheiro') {
+                const valorTroco = parseFloat(document.getElementById('valor-troco').value);
+                if (valorTroco && valorTroco > total) {
+                    const trocoCalculado = valorTroco - total;
+                    mensagem += `💵 *PAGA COM:* R$ ${valorTroco.toFixed(2).replace('.', ',')}\n`;
+                    mensagem += `🔄 *LEVAR TROCO DE:* R$ ${trocoCalculado.toFixed(2).replace('.', ',')}\n`;
+                } else if (valorTroco && valorTroco <= total) {
+                    alert("O valor para o troco deve ser maior que o total do pedido!");
+                    return;
+                } else {
+                    mensagem += `💵 *TROCO:* Não precisa de troco (Valor exato)\n`;
+                }
+            }
+
+            mensagem += `📍 *CLIENTE / ENTREGA:*\n${info}\n`;
+
+            if (formaPagamento === 'PIX') {
+                mensagem += `\n📌 _Estou enviando o pedido e aguardo a confirmação do PIX!_`;
+            }
+
+            const url = `https://wa.me/${SEU_NUMERO_WHATSAPP}?text=${encodeURIComponent(mensagem)}`;
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>

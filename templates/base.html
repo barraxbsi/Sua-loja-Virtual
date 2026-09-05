@@ -178,10 +178,15 @@
         </div>
     </div>
 
-    <!-- Rodapé -->
+    <!-- Rodapé com atalho de login do Admin -->
     <footer class="bg-dark text-white text-center py-3 mt-auto">
         <div class="container">
-            <small class="text-muted">&copy; 2026 - Sua Loja Virtual | Todos os direitos reservados</small>
+            <small class="text-muted d-block mb-1">&copy; 2026 - Sua Loja Virtual | Todos os direitos reservados</small>
+            <small>
+                <a href="{{ url_for('login_admin') }}" class="text-muted text-decoration-none">
+                    <i class="bi bi-shield-lock"></i> Acesso Administrativo
+                </a>
+            </small>
         </div>
     </footer>
 

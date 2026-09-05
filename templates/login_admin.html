@@ -18,6 +18,9 @@
             {% endwith %}
 
             <form action="{{ url_for('login_admin') }}" method="POST">
+                <!-- TOKEN DE SEGURANÇA CSRF -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
                 <div class="mb-3">
                     <label for="email" class="form-label">E-mail Corporativo</label>
                     <input type="email" class="form-control" id="email" name="email" required placeholder="admin@empresa.com">

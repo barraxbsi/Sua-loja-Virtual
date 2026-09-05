@@ -18,6 +18,9 @@
             {% endwith %}
 
             <form action="{{ url_for('login_cliente') }}" method="POST">
+                <!-- TOKEN DE SEGURANÇA CSRF -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
                 <div class="mb-3">
                     <label for="email" class="form-label">Seu E-mail</label>
                     <input type="email" class="form-control" id="email" name="email" required placeholder="seu@email.com">
@@ -28,7 +31,8 @@
                 </div>
                 <button type="submit" class="btn btn-dark w-100 py-2">Entrar</button>
             </form>
-           <div class="text-center mt-3">
+            
+            <div class="text-center mt-3">
                 <small class="text-muted">Não tem uma conta? <a href="{{ url_for('cadastro_cliente') }}">Cadastre-se aqui</a></small>
             </div>
         </div>

@@ -1,96 +1,70 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row">
-    <!-- Sidebar de Categorias -->
-    <div class="col-lg-3 mb-4">
-        <div class="card border-0 shadow-sm rounded-3">
-            <div class="card-header bg-dark text-white fw-bold py-3">
-                <i class="bi bi-grid-fill me-2 text-warning"></i>Categorias
-            </div>
-            <div class="list-group list-group-flush">
-                <a href="/" class="list-group-item list-group-item-action fw-semibold py-2">
-                    <i class="bi bi-collection me-2"></i>Todas as Categorias
+<div class="container my-5">
+    <!-- Banner Principal / Anúncio da Sua Loja Virtual -->
+    <div class="p-5 mb-4 bg-dark text-white rounded-3 shadow-lg border border-warning position-relative overflow-hidden">
+        <div class="container-fluid py-5">
+            <h1 class="display-4 fw-bold text-warning mb-3">
+                <i class="bi bi-bag-heart-fill me-2"></i> Seja Bem-vindo à Sua Loja Virtual!
+            </h1>
+            <p class="col-md-8 fs-4 text-light">
+                O seu destino definitivo para as melhores tendências, qualidade garantida e o atendimento exclusivo que você merece. Explore nossas novidades em breve!
+            </p>
+            <hr class="my-4 border-warning opacity-50">
+            <p class="text-muted small">
+                Trabalhamos com excelência para trazer os melhores produtos diretamente para você.
+            </p>
+            <div class="d-flex gap-3 mt-4">
+                <a class="btn btn-warning btn-lg fw-bold px-4 text-dark shadow" href="{{ url_for('login_cliente') }}">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Entrar na Conta
                 </a>
-                <a href="/?categoria=Combos" class="list-group-item list-group-item-action fw-bold text-danger py-2 bg-light">
-                    <i class="bi bi-fire me-2"></i>Combos & Promoções 🔥
+                <a class="btn btn-outline-light btn-lg px-4" href="{{ url_for('cadastro_cliente') }}">
+                    Criar Cadastro
                 </a>
-                {% for cat in categorias %}
-                    {% if cat != 'Combos' %}
-                    <a href="/?categoria={{ cat }}" class="list-group-item list-group-item-action py-2">
-                        <i class="bi bi-chevron-right me-1 small"></i>{{ cat }}
-                    </a>
-                    {% endif %}
-                {% endfor %}
             </div>
+        </div>
+        <!-- Ícone decorativo de fundo opcional -->
+        <div class="position-absolute end-0 bottom-0 opacity-10 pe-3 pb-3 d-none d-md-block">
+            <i class="bi bi-shop display-1 text-warning" style="font-size: 10rem;"></i>
         </div>
     </div>
 
-    <!-- Área de Busca e Cards de Produtos -->
-    <div class="col-lg-9">
-        <!-- Campo de Pesquisa -->
-        <form action="/" method="GET" class="mb-4">
-            <div class="input-group shadow-sm rounded-3 overflow-hidden">
-                <input type="text" name="busca" class="form-control border-0 py-2 ps-3" placeholder="Buscar combo, hambúrguer, bebida..." value="{{ request.args.get('busca', '') }}">
-                <button class="btn btn-warning text-dark fw-bold px-4" type="submit">
-                    <i class="bi bi-search me-1"></i> Buscar
-                </button>
-            </div>
-        </form>
-
-        <!-- Vitrine de Produtos & Combos -->
-        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
-            {% for produto in produtos %}
-            <div class="col">
-                <div class="card h-100 border-0 shadow-sm rounded-3 overflow-hidden position-relative">
-                    
-                    {% if produto.categoria == 'Combos' %}
-                    <!-- Badge em destaque para Combos -->
-                    <span class="position-absolute top-0 end-0 bg-danger text-white fw-bold px-3 py-1 rounded-bottom-start shadow-sm" style="z-index: 10; font-size: 0.8rem;">
-                        <i class="bi bi-star-fill me-1"></i>COMBO
-                    </span>
-                    {% endif %}
-
-                    <!-- Imagem do Produto -->
-                    <div class="bg-white text-center p-3 d-flex align-items-center justify-content-center" style="height: 200px;">
-                        {% if produto.imagem_url %}
-                            <img src="{{ produto.imagem_url }}" class="img-fluid" style="max-height: 100%; object-fit: contain;" alt="{{ produto.nome }}">
-                        {% else %}
-                            <div class="text-muted"><i class="bi bi-image fs-1 d-block"></i>Sem foto</div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Corpo do Card -->
-                    <div class="card-body d-flex flex-column p-3 bg-white">
-                        <span class="badge {% if produto.categoria == 'Combos' %}bg-danger{% else %}bg-secondary{% endif %} mb-2 align-self-start fw-normal px-2 py-1">
-                            {{ produto.categoria }}
-                        </span>
-                        <h5 class="card-title fw-bold text-dark mb-1" style="font-size: 1.1rem;">{{ produto.nome }}</h5>
-                        
-                        <p class="card-text text-muted small flex-grow-1 mb-3" style="display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
-                            {{ produto.descricao or 'Sem descrição informada.' }}
-                        </p>
-
-                        <!-- Rodapé do Card (Preço e Botão) -->
-                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-                            <div>
-                                <small class="text-muted d-block" style="font-size: 0.75rem;">Por apenas</small>
-                                <span class="fs-5 fw-bold text-success">R$ {{ "%.2f"|format(produto.preco) }}</span>
-                            </div>
-                            <button data-nome="{{ produto.nome }}" data-preco="{{ produto.preco }}" onclick="adicionarAoCarrinho(this.dataset.nome, parseFloat(this.dataset.preco))" class="btn btn-success btn-sm fw-bold px-3 rounded-pill shadow-sm">
-                                <i class="bi bi-plus-lg me-1"></i> Adicionar
-                            </button>
-                        </div>
-                    </div>
+    <!-- Seção de Destaques / Vantagens da Loja -->
+    <div class="row text-center mt-5">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 bg-dark text-white border-secondary shadow-sm p-3">
+                <div class="card-body">
+                    <i class="bi bi-shield-check text-warning display-4 mb-3"></i>
+                    <h3 class="h5 fw-bold">Compra Segura</h3>
+                    <p class="text-muted small">Ambiente protegido e total segurança nas suas informações e transações.</p>
                 </div>
             </div>
-            {% else %}
-            <div class="col-12 text-center py-5">
-                <i class="bi bi-search fs-1 text-muted mb-3 d-block"></i>
-                <h5 class="text-muted">Nenhum produto ou combo encontrado.</h5>
-                <a href="/" class="btn btn-outline-dark btn-sm mt-2">Limpar filtros</a>
+        </div>
+
+        <!-- CARD DE QUEM SOMOS NÓS -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 bg-dark text-white border-secondary shadow-sm p-3">
+                <div class="card-body">
+                    <i class="bi bi-people text-warning display-4 mb-3"></i>
+                    <h3 class="h5 fw-bold">Quem Somos Nós</h3>
+                    <p class="text-muted small">Comprometidos em oferecer excelência, confiança e uma experiência única para você em cada compra.</p>
+                </div>
             </div>
-            {% endfor %}
+        </div>
+        
+        <!-- CARD DE SUPORTE LINKADO AO WHATSAPP -->
+        <div class="col-md-4 mb-4">
+            <a href="https://wa.me/5591992105399?text=Olá!%20Vim%20pelo%20site%20e%20preciso%20de%20suporte." target="_blank" class="text-decoration-none">
+                <div class="card h-100 bg-dark text-white border-warning shadow-sm p-3 transition-card" style="transition: transform 0.2s;">
+                    <div class="card-body">
+                        <i class="bi bi-whatsapp text-success display-4 mb-3"></i>
+                        <h3 class="h5 fw-bold text-white">Suporte Dedicado</h3>
+                        <p class="text-muted small mb-2">Atendimento personalizado pronto para tirar todas as suas dúvidas.</p>
+                        <span class="badge bg-success text-white"><i class="bi bi-chat-dots"></i> Falar no WhatsApp</span>
+                    </div>
+                </div>
+            </a>
         </div>
     </div>
 </div>

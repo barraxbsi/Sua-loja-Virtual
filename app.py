@@ -4,17 +4,37 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_wtf.csrf import CSRFProtect
+from dotenv import load_dotenv
+
+# 1. Carrega as variáveis do arquivo .env
+load_dotenv()
 
 app = Flask(__name__)
 
-# Configurações do Banco de Dados e Uploads
-app.config['SECRET_KEY'] = 'chave_secreta_super_segura_aqui'  # Necessário para gerenciar sessões
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+# 2. Configurações de Segurança e Banco de Dados
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'chave-fallback-dev-apenas')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///database.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Configurações de Cookies para Proteção de Sessão
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+# Ative a linha abaixo em produção quando seu site tiver SSL (HTTPS):
+# app.config['SESSION_COOKIE_SECURE'] = True 
+
+# 3. Proteção Contra Ataques CSRF
+csrf = CSRFProtect(app)
+
+# Configurações de Upload
 UPLOAD_FOLDER = 'static/uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def arquivo_permitido(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 db = SQLAlchemy(app)
 
@@ -57,7 +77,7 @@ def master_required(f):
     return decorated_function
 
 # --- ROTAS DE AUTENTICAÇÃO E CONTA ---
-# Rota de Cadastro de Clientes
+
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro_cliente():
     if request.method == 'POST':
@@ -65,13 +85,11 @@ def cadastro_cliente():
         email = request.form.get('email')
         senha = request.form.get('password')
         
-        # Verifica se o e-mail já existe no banco
         usuario_existente = User.query.filter_by(email=email).first()
         if usuario_existente:
             flash('Este e-mail já está cadastrado. Tente fazer login.', 'warning')
             return redirect(url_for('login_cliente'))
         
-        # Cria o novo cliente
         novo_cliente = User(
             nome=nome,
             email=email,
@@ -161,7 +179,7 @@ def admin_cadastrar():
     file = request.files.get('imagem_file')
     imagem_path = None
     
-    if file and file.filename != '':
+    if file and file.filename != '' and arquivo_permitido(file.filename):
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         imagem_path = f'/static/uploads/{filename}'
@@ -182,7 +200,7 @@ def admin_cadastrar():
 
     return redirect(url_for('admin_index'))
 
-@app.route('/admin/deletar/<int:id>')
+@app.route('/admin/deletar/<int:id>', methods=['POST'])
 @admin_required
 def admin_deletar(id):
     produto = Produto.query.get_or_404(id)
@@ -215,7 +233,7 @@ def gerenciar_equipe():
     admins = User.query.filter_by(role='admin').all()
     return render_template('gerenciar_equipe.html', admins=admins)
 
-# --- COMANDO CLI PARA CRIAR A SUA CONTA MESTRE ---
+# --- COMANDO CLI PARA CRIAR A CONTA MESTRE ---
 
 @app.cli.command("create-master")
 def create_master():
@@ -231,7 +249,7 @@ def create_master():
         )
         db.session.add(master)
         db.session.commit()
-        print("Conta Mestre criada com sucesso! (E-mail: barral1@admin.com | Senha: Wagnerbarral3121)")
+        print(f"Conta Mestre criada com sucesso! (E-mail: {email})")
     else:
         print("A conta Mestre já existe no banco de dados.")
 

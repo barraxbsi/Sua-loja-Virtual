@@ -15,6 +15,9 @@
             </div>
             <div class="card-body">
                 <form action="/admin/cadastrar" method="POST" enctype="multipart/form-data">
+                    <!-- TOKEN DE SEGURANÇA CSRF -->
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
                     <div class="mb-3">
                         <label class="form-label">Nome do Produto</label>
                         <input type="text" name="nome" class="form-control" required>
@@ -74,14 +77,15 @@
                             <td>R$ {{ "%.2f"|format(produto.preco) }}</td>
                             <td>{{ produto.estoque }}</td>
                             <td>
-                                <a href="/admin/deletar/{{ produto.id }}" class="btn btn-sm btn-outline-danger"
-                                    onclick="return confirm('Deseja excluir este item?')">Excluir</a>
+                                <form action="/admin/deletar/{{ produto.id }}" method="POST" style="display:inline;" onsubmit="return confirm('Deseja excluir este item?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>
+                                </form>
                             </td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="5" class="text-center py-3">Nenhum produto cadastrado ainda. Use o formulário
-                                ao lado!</td>
+                            <td colspan="5" class="text-center py-3">Nenhum produto cadastrado ainda. Use o formulário ao lado!</td>
                         </tr>
                         {% endfor %}
                     </tbody>

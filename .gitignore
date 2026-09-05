@@ -1,0 +1,17 @@
+# Arquivo de variáveis de ambiente (contém chaves e senhas)
+.env
+
+# Ambientes virtuais Python
+venv/
+.venv/
+env/
+
+# Arquivos do banco de dados local
+*.db
+*.sqlite3
+
+# Cache do Python e arquivos temporários
+__pycache__/
+*.pyc
+.vscode/
+.idea/

@@ -57,6 +57,35 @@ def master_required(f):
     return decorated_function
 
 # --- ROTAS DE AUTENTICAÇÃO E CONTA ---
+# Rota de Cadastro de Clientes
+@app.route('/cadastro', methods=['GET', 'POST'])
+def cadastro_cliente():
+    if request.method == 'POST':
+        nome = request.form.get('nome')
+        email = request.form.get('email')
+        senha = request.form.get('password')
+        
+        # Verifica se o e-mail já existe no banco
+        usuario_existente = User.query.filter_by(email=email).first()
+        if usuario_existente:
+            flash('Este e-mail já está cadastrado. Tente fazer login.', 'warning')
+            return redirect(url_for('login_cliente'))
+        
+        # Cria o novo cliente
+        novo_cliente = User(
+            nome=nome,
+            email=email,
+            password=generate_password_hash(senha),
+            role='cliente'
+        )
+        
+        db.session.add(novo_cliente)
+        db.session.commit()
+        
+        flash('Cadastro realizado com sucesso! Faça login para continuar.', 'success')
+        return redirect(url_for('login_cliente'))
+        
+    return render_template('cadastro.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login_cliente():

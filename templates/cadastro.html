@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container my-5" style="max-width: 400px;">
+<div class="container my-5" style="max-width: 450px;">
     <div class="card shadow-sm border-0">
         <div class="card-body p-4">
-            <h3 class="card-title text-center mb-4 text-dark fw-bold">Área do Cliente</h3>
+            <h3 class="card-title text-center mb-4 text-dark fw-bold">Criar Minha Conta</h3>
             
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
@@ -17,19 +17,24 @@
                 {% endif %}
             {% endwith %}
 
-            <form action="{{ url_for('login_cliente') }}" method="POST">
+            <form action="{{ url_for('cadastro_cliente') }}" method="POST">
                 <div class="mb-3">
-                    <label for="email" class="form-label">Seu E-mail</label>
+                    <label for="nome" class="form-label">Nome Completo</label>
+                    <input type="text" class="form-control" id="nome" name="nome" required placeholder="Seu nome">
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">E-mail</label>
                     <input type="email" class="form-control" id="email" name="email" required placeholder="seu@email.com">
                 </div>
                 <div class="mb-4">
-                    <label for="password" class="form-label">Sua Senha</label>
+                    <label for="password" class="form-label">Crie uma Senha</label>
                     <input type="password" class="form-control" id="password" name="password" required placeholder="••••••••">
                 </div>
-                <button type="submit" class="btn btn-dark w-100 py-2">Entrar</button>
+                <button type="submit" class="btn btn-primary w-100 py-2">Cadastrar</button>
             </form>
-           <div class="text-center mt-3">
-                <small class="text-muted">Não tem uma conta? <a href="{{ url_for('cadastro_cliente') }}">Cadastre-se aqui</a></small>
+
+            <div class="text-center mt-3">
+                <small class="text-muted">Já possui uma conta? <a href="{{ url_for('login_cliente') }}">Entrar aqui</a></small>
             </div>
         </div>
     </div>
